@@ -20,13 +20,21 @@ class RNN(nn.Module):
 
         self.hidden_size = hidden_size
 
-        self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
-        self.i2o = nn.Linear(input_size + hidden_size, output_size)
+        self.i2h1 = nn.Linear(input_size + hidden_size, 24)
+        self.i2h2 = nn.Linear(24,12)
+        self.i2h3 = nn.Linear(12, hidden_size)
+        self.i2o1 = nn.Linear(input_size + hidden_size, 24)
+        self.i2o2 = nn.Linear(24, 12)
+        self.i2o3 = nn.Linear(12, output_size)
 
     def forward(self, inputT, hiddenT):
         combined = torch.cat((inputT, hiddenT), 1)
-        hiddenT = self.i2h(combined)
-        output = self.i2o(combined)
+        hiddenT1 = self.i2h1(combined)
+        hiddenT2 = self.i2h2(hiddenT1)
+        hiddenT = self.i2h3(hiddenT2)
+        output1 = self.i2o1(combined)
+        output2 = self.i2o2(output1)
+        output = self.i2o3(output2)
         return output, hiddenT
 
     def initHidden(self):
@@ -53,7 +61,7 @@ def timeSince(since):
     return '%dm %ds' % (m, s)
 
 def randomChoice(l):
-    nRows = 10
+    nRows = 20
     startRow = random.randint(2, len(l) - (nRows+1))
     inputVec = l.iloc[startRow:startRow+nRows]
     outputVec = l.iloc[startRow+nRows:startRow+nRows+1]
@@ -87,9 +95,9 @@ criterion = nn.L1Loss()
 learning_rate = 0.005 # If you set this too high, it might explode. If too low, it might not learn
 
 #Train the network
-n_iters = 5000
+n_iters = 10000
 print_every = 50
-plot_every = 10
+plot_every = 100
 
 # Keep track of losses for plotting
 current_loss = 0
